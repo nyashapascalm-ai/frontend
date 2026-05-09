@@ -8,7 +8,7 @@ type Product = {
   price: number;
 };
 
-const API = "http://localhost:3000/products";
+const API = "https://backend-production-c3f5.up.railway.app/products";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
