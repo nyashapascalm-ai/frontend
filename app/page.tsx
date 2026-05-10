@@ -26,6 +26,7 @@ type Content = {
   thumbnailPrompt: string;
   cta: string;
   status: string;
+  postUrl?: string;
   createdAt: string;
 };
 
@@ -51,7 +52,7 @@ function getCurrencySymbol(currency: string) {
 export default function Home() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [form, setForm] = useState({ name: "", description: "", price: "", currency: "USD", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
+  const [form, setForm] = useState({ name: "", description: "", price: "", currency: "GBP", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,7 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [contentType, setContentType] = useState("tiktok");
   const [stats, setStats] = useState<Stats | null>(null);
+  const [publishing, setPublishing] = useState<number | null>(null);
 
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -106,7 +108,7 @@ export default function Home() {
     });
     const data = await res.json();
     if (!res.ok) { setErrors(data.errors || {}); return; }
-    setForm({ name: "", description: "", price: "", currency: "USD", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
+    setForm({ name: "", description: "", price: "", currency: "GBP", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
     setEditingId(null);
     setErrors({});
     setShowForm(false);
@@ -138,9 +140,26 @@ export default function Home() {
     setContent(prev => prev.filter(c => c.id !== id));
   }
 
+  async function handlePublishToWordPress(contentId: number) {
+    setPublishing(contentId);
+    const t = token || localStorage.getItem("token");
+    const res = await fetch(`${API}/wordpress/publish/${contentId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${t}` },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Published to mumdeals.co.uk! View at: ${data.postUrl}`);
+      loadContent(selectedProduct!.id);
+    } else {
+      alert(`Failed: ${data.error}`);
+    }
+    setPublishing(null);
+  }
+
   function handleEdit(p: Product) {
     setEditingId(p.id);
-    setForm({ name: p.name, description: p.description || "", price: String(p.price), currency: p.currency || "USD", affiliateLink: p.affiliateLink || "", commissionRate: p.commissionRate ? String(p.commissionRate) : "", network: p.network || "", category: p.category || "", status: p.status || "active", slug: p.slug || "" });
+    setForm({ name: p.name, description: p.description || "", price: String(p.price), currency: p.currency || "GBP", affiliateLink: p.affiliateLink || "", commissionRate: p.commissionRate ? String(p.commissionRate) : "", network: p.network || "", category: p.category || "", status: p.status || "active", slug: p.slug || "" });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -158,17 +177,17 @@ export default function Home() {
   }
 
   const networks = ["Amazon", "Awin", "Impact", "ClickBank", "Other"];
-  const categories = ["AI Tools", "Finance", "Fitness", "Home Office", "Tech", "Other"];
+  const categories = ["AI Tools", "Finance", "Fitness", "Home Office", "Tech", "Health", "Beauty", "Parenting", "Home & Garden", "Fashion", "Other"];
 
   if (selectedProduct) {
     const trackingUrl = selectedProduct.slug ? `${TRACK_BASE}/${selectedProduct.slug}` : null;
-    const sym = getCurrencySymbol(selectedProduct.currency || "USD");
+    const sym = getCurrencySymbol(selectedProduct.currency || "GBP");
     return (
       <div className="min-h-screen bg-gray-100">
         <header className="bg-white shadow-sm">
           <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => setSelectedProduct(null)} className="text-sm text-gray-500 hover:text-gray-700">Back</button>
+              <button onClick={() => setSelectedProduct(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
               <h1 className="text-2xl font-bold text-gray-900">{selectedProduct.name}</h1>
             </div>
             {token && (
@@ -229,9 +248,23 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">{c.type.toUpperCase()}</span>
-                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{c.status}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${c.status === "published" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{c.status}</span>
                     </div>
-                    <button onClick={() => handleDeleteContent(c.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                    <div className="flex items-center gap-2">
+                      {c.type === "blog" && (
+                        <button
+                          onClick={() => handlePublishToWordPress(c.id)}
+                          disabled={publishing === c.id || c.status === "published"}
+                          className={`text-xs px-2 py-1 rounded-lg transition disabled:opacity-50 ${c.status === "published" ? "bg-green-100 text-green-700" : "bg-blue-100 hover:bg-blue-200 text-blue-700"}`}
+                        >
+                          {publishing === c.id ? "Publishing..." : c.status === "published" ? "Published ✓" : "Publish to WordPress"}
+                        </button>
+                      )}
+                      {c.postUrl && (
+                        <a href={c.postUrl} target="_blank" className="text-xs text-green-500 hover:underline">View post →</a>
+                      )}
+                      <button onClick={() => handleDeleteContent(c.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                    </div>
                   </div>
                   <h3 className="font-bold text-gray-900 text-lg">{c.title}</h3>
                   <div className="bg-gray-50 rounded-lg p-4">
@@ -341,7 +374,7 @@ export default function Home() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug (for tracking link)</label>
-                <input className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. jasper" value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} />
+                <input className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. mamas-papas" value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -381,7 +414,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-                  <span className="text-green-600 font-bold text-lg">{getCurrencySymbol(p.currency || "USD")}{p.price.toFixed(2)}</span>
+                  <span className="text-green-600 font-bold text-lg">{getCurrencySymbol(p.currency || "GBP")}{p.price.toFixed(2)}</span>
                   {token && (
                     <>
                       <button onClick={() => handleEdit(p)} className="text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-medium px-3 py-1.5 rounded-lg transition">Edit</button>
