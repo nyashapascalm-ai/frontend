@@ -44,6 +44,8 @@ export default function Dashboard() {
   const [checkingAlerts, setCheckingAlerts] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const [importing, setImporting] = useState(false);
+  const [autoTagStatus, setAutoTagStatus] = useState("");
+  const [autoTagging, setAutoTagging] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -96,6 +98,21 @@ export default function Dashboard() {
     if (res.ok) loadDashboard(token!);
   }
 
+  async function handleAutoTag() {
+    setAutoTagging(true);
+    setAutoTagStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/products/autotag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ force: true }),
+    });
+    const data = await res.json();
+    setAutoTagStatus(data.message || "Done!");
+    setAutoTagging(false);
+    loadDashboard(token!);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -138,7 +155,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
             <div className="flex items-center gap-3">
@@ -153,7 +170,7 @@ export default function Dashboard() {
                 disabled={checkingAlerts}
                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
               >
-                {checkingAlerts ? "Checking..." : "Check Alerts"}
+                {checkingAlerts ? "Checking..." : "Check"}
               </button>
             </div>
             {alertStatus && (
@@ -173,21 +190,26 @@ export default function Dashboard() {
                 Download CSV template
               </button>
               <label className="block">
-                <input
-                  type="file"
-                  accept=".csv"
-                  className="hidden"
-                  onChange={handleImport}
-                  disabled={importing}
-                />
-                <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-6 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
-                  {importing ? "Importing..." : "Click to upload CSV file"}
+                <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={importing} />
+                <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
+                  {importing ? "Importing..." : "Click to upload CSV"}
                 </div>
               </label>
-              {importStatus && (
-                <p className="text-sm text-green-600">{importStatus}</p>
-              )}
+              {importStatus && <p className="text-sm text-green-600">{importStatus}</p>}
             </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
+            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
+            <button
+              onClick={handleAutoTag}
+              disabled={autoTagging}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
+            </button>
+            {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
           </div>
         </div>
 
