@@ -58,6 +58,8 @@ export default function Dashboard() {
   const [blogPublishStatus, setBlogPublishStatus] = useState("");
   const [pinning, setPinning] = useState(false);
   const [pinStatus, setPinStatus] = useState("");
+  const [addingImages, setAddingImages] = useState(false);
+  const [imageStatus, setImageStatus] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -179,6 +181,19 @@ export default function Dashboard() {
     setPinning(false);
   }
 
+  async function handleAddFeaturedImages() {
+    setAddingImages(true);
+    setImageStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/images/add-featured-images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setImageStatus(data.message || "Done!");
+    setAddingImages(false);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -281,8 +296,23 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Add Featured Images</h2>
+            <p className="text-sm text-gray-500 mb-4">Auto-fetch relevant images from Unsplash and set them as featured images on all published posts.</p>
+            <button
+              onClick={handleAddFeaturedImages}
+              disabled={addingImages}
+              className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {addingImages ? "Adding Images... (may take a minute)" : "Add Featured Images"}
+            </button>
+            {imageStatus && <p className="text-sm text-green-600 mt-3">{imageStatus}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Pin to Pinterest</h2>
-            <p className="text-sm text-gray-500 mb-4">Auto-pin all active products to your Baby & Parenting Deals board on Pinterest.</p>
+            <p className="text-sm text-gray-500 mb-4">Auto-pin all active products to your Baby & Parenting Deals board.</p>
             <button
               onClick={handlePinAllProducts}
               disabled={pinning}
@@ -297,9 +327,7 @@ export default function Dashboard() {
             )}
             <p className="text-xs text-gray-400 mt-2">⚠️ Requires Pinterest API approval</p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
             <div className="flex items-center gap-3">
@@ -336,7 +364,9 @@ export default function Dashboard() {
             </button>
             {reportStatus && <p className="text-sm text-green-600 mt-3">{reportStatus}</p>}
           </div>
+        </div>
 
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
             <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
@@ -349,9 +379,7 @@ export default function Dashboard() {
             </button>
             {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
             <button
@@ -372,7 +400,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Quick Links</h2>
             <div className="space-y-2">
-              <a href="https://hotpink-jay-474959.hostingersite.com" target="_blank" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <a href="https://mumdeals.co.uk" target="_blank" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <span className="text-sm font-medium text-gray-700">WordPress Site</span>
                 <span className="text-xs text-gray-400">View →</span>
               </a>
@@ -383,6 +411,10 @@ export default function Dashboard() {
               <a href="https://ui.awin.com/awin/affiliate/2660114" target="_blank" className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
                 <span className="text-sm font-medium text-blue-700">Awin Dashboard</span>
                 <span className="text-xs text-blue-400">View →</span>
+              </a>
+              <a href="https://search.google.com/search-console" target="_blank" className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                <span className="text-sm font-medium text-green-700">Search Console</span>
+                <span className="text-xs text-green-400">View →</span>
               </a>
             </div>
           </div>
