@@ -23,6 +23,16 @@ type FeedProduct = {
 
 const API = "https://backend-production-c3f5.up.railway.app";
 
+const COMMISSION_RATES: Record<string, number> = {
+  "112637": 8,
+  "60005": 10,
+  "71935": 12,
+  "97411": 7,
+  "101126": 10,
+  "115013": 15,
+  "443": 8,
+};
+
 export default function AwinPage() {
   const router = useRouter();
   const [feeds, setFeeds] = useState<Feed[]>([]);
@@ -32,9 +42,13 @@ export default function AwinPage() {
   const [loading, setLoading] = useState(false);
   const [loadingFeeds, setLoadingFeeds] = useState(true);
   const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState("");
+  const [commission, setCommission] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -50,10 +64,17 @@ export default function AwinPage() {
     setSelected(new Set());
     setImportStatus("");
     const token = localStorage.getItem("token");
-    const url = `${API}/awin/feed-products/${feed.id}?limit=50${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""}`;
+    const url = `${API}/awin/feed-products/${feed.id}?limit=100${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ""}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
-    setProducts(data.products || []);
+
+    let filtered = data.products || [];
+
+    if (minPrice) filtered = filtered.filter((p: FeedProduct) => p.price >= parseFloat(minPrice));
+    if (maxPrice) filtered = filtered.filter((p: FeedProduct) => p.price <= parseFloat(maxPrice));
+    if (inStockOnly) filtered = filtered.filter((p: FeedProduct) => p.inStock === "1");
+
+    setProducts(filtered);
     setTotal(data.total || 0);
     setLoading(false);
   }
@@ -63,7 +84,10 @@ export default function AwinPage() {
     setImporting(true);
     setImportStatus("");
     const token = localStorage.getItem("token");
-    const toImport = Array.from(selected).map(i => products[i]);
+    const toImport = Array.from(selected).map(i => ({
+      ...products[i],
+      commissionRate: commission ? parseFloat(commission) : (selectedFeed ? COMMISSION_RATES[selectedFeed.id] : undefined),
+    }));
     const res = await fetch(`${API}/awin/import-bulk`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -86,6 +110,11 @@ export default function AwinPage() {
 
   function selectAll() {
     setSelected(new Set(products.map((_, i) => i)));
+  }
+
+  function estimatedValue(price: number, feedId: string) {
+    const rate = commission ? parseFloat(commission) : (COMMISSION_RATES[feedId] || 10);
+    return ((price * rate) / 100).toFixed(2);
   }
 
   if (loadingFeeds) return (
@@ -128,12 +157,17 @@ export default function AwinPage() {
               {feeds.map(f => (
                 <div
                   key={f.id}
-                  onClick={() => { setSelectedFeed(f); loadProducts(f); }}
+                  onClick={() => { setSelectedFeed(f); setCommission(String(COMMISSION_RATES[f.id] || "")); loadProducts(f); }}
                   className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition"
                 >
                   <h3 className="font-semibold text-gray-900">{f.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{f.products.toLocaleString()} products</p>
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-2 inline-block">{f.currency}</span>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{f.currency}</span>
+                    {COMMISSION_RATES[f.id] && (
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{COMMISSION_RATES[f.id]}% commission</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -146,28 +180,67 @@ export default function AwinPage() {
                 <h2 className="font-semibold text-gray-900">{selectedFeed.name} — {total.toLocaleString()} results</h2>
               </div>
               {products.length > 0 && (
-                <button onClick={selectAll} className="text-sm text-blue-600 hover:text-blue-700">Select All</button>
+                <button onClick={selectAll} className="text-sm text-blue-600 hover:text-blue-700">Select All ({products.length})</button>
               )}
             </div>
 
-            <div className="flex gap-3">
-              <input
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Search products..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && loadProducts(selectedFeed, search)}
-              />
-              <button
-                onClick={() => loadProducts(selectedFeed, search)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                Search
-              </button>
+            <div className="bg-white rounded-2xl shadow-sm p-4 grid grid-cols-5 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs text-gray-500 mb-1">Search products</label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. pram, dress, sofa..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && loadProducts(selectedFeed, search)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Min price (£)</label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
+                  type="number"
+                  value={minPrice}
+                  onChange={e => setMinPrice(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Max price (£)</label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="999"
+                  type="number"
+                  value={maxPrice}
+                  onChange={e => setMaxPrice(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Commission %</label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="10"
+                  type="number"
+                  value={commission}
+                  onChange={e => setCommission(e.target.value)}
+                />
+              </div>
+              <div className="col-span-4 flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} className="rounded" />
+                  <span className="text-sm text-gray-700">In stock only</span>
+                </label>
+                <button
+                  onClick={() => loadProducts(selectedFeed, search)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                >
+                  Apply Filters
+                </button>
+              </div>
             </div>
 
             {loading ? (
-              <p className="text-center text-gray-400 py-12">Loading products... (this may take a moment for large feeds)</p>
+              <p className="text-center text-gray-400 py-12">Loading products...</p>
             ) : (
               <div className="space-y-3">
                 {products.map((p, i) => (
@@ -186,11 +259,17 @@ export default function AwinPage() {
                       <div className="flex items-center gap-2 mt-1">
                         {p.category && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{p.category}</span>}
                         {p.inStock === "1" && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">In Stock</span>}
+                        <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
+                          Est. commission: £{estimatedValue(p.price, selectedFeed.id)}
+                        </span>
                       </div>
                     </div>
                     <span className="text-green-600 font-bold">£{p.price.toFixed(2)}</span>
                   </div>
                 ))}
+                {products.length === 0 && !loading && (
+                  <p className="text-center text-gray-400 py-12">No products match your filters. Try adjusting them.</p>
+                )}
               </div>
             )}
           </div>
