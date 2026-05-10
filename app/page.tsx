@@ -7,6 +7,7 @@ type Product = {
   name: string;
   description?: string;
   price: number;
+  currency: string;
   affiliateLink?: string;
   commissionRate?: number;
   network?: string;
@@ -38,10 +39,20 @@ type Stats = {
 const API = "https://backend-production-c3f5.up.railway.app";
 const TRACK_BASE = "https://backend-production-c3f5.up.railway.app/track/go";
 
+const CURRENCIES = ["USD", "GBP", "EUR", "CAD", "AUD", "JPY", "CHF", "INR", "NGN", "ZAR"];
+
+function getCurrencySymbol(currency: string) {
+  const symbols: Record<string, string> = {
+    USD: "$", GBP: "£", EUR: "€", CAD: "C$", AUD: "A$",
+    JPY: "¥", CHF: "CHF", INR: "₹", NGN: "₦", ZAR: "R",
+  };
+  return symbols[currency] || currency;
+}
+
 export default function Home() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [form, setForm] = useState({ name: "", description: "", price: "", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
+  const [form, setForm] = useState({ name: "", description: "", price: "", currency: "USD", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(true);
@@ -96,7 +107,7 @@ export default function Home() {
     });
     const data = await res.json();
     if (!res.ok) { setErrors(data.errors || {}); return; }
-    setForm({ name: "", description: "", price: "", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
+    setForm({ name: "", description: "", price: "", currency: "USD", affiliateLink: "", commissionRate: "", network: "", category: "", status: "active", slug: "" });
     setEditingId(null);
     setErrors({});
     setShowForm(false);
@@ -130,7 +141,7 @@ export default function Home() {
 
   function handleEdit(p: Product) {
     setEditingId(p.id);
-    setForm({ name: p.name, description: p.description || "", price: String(p.price), affiliateLink: p.affiliateLink || "", commissionRate: p.commissionRate ? String(p.commissionRate) : "", network: p.network || "", category: p.category || "", status: p.status || "active", slug: p.slug || "" });
+    setForm({ name: p.name, description: p.description || "", price: String(p.price), currency: p.currency || "USD", affiliateLink: p.affiliateLink || "", commissionRate: p.commissionRate ? String(p.commissionRate) : "", network: p.network || "", category: p.category || "", status: p.status || "active", slug: p.slug || "" });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -152,6 +163,7 @@ export default function Home() {
 
   if (selectedProduct) {
     const trackingUrl = selectedProduct.slug ? `${TRACK_BASE}/${selectedProduct.slug}` : null;
+    const sym = getCurrencySymbol(selectedProduct.currency || "USD");
     return (
       <div className="min-h-screen bg-gray-100">
         <header className="bg-white shadow-sm">
@@ -190,7 +202,7 @@ export default function Home() {
             </div>
             <div className="bg-white rounded-2xl shadow-sm p-5">
               <p className="text-sm text-gray-500">Profitability</p>
-              <p className="text-3xl font-bold text-purple-600">${stats?.profitabilityScore ?? "—"}</p>
+              <p className="text-3xl font-bold text-purple-600">{sym}{stats?.profitabilityScore ?? "—"}</p>
             </div>
             <div className="bg-white rounded-2xl shadow-sm p-5">
               <p className="text-sm text-gray-500">Trend Score</p>
@@ -290,8 +302,13 @@ export default function Home() {
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name[0]}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
-                <input className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                <div className="flex gap-2">
+                  <select className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}>
+                    {CURRENCIES.map(c => <option key={c} value={c}>{getCurrencySymbol(c)} {c}</option>)}
+                  </select>
+                  <input className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+                </div>
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price[0]}</p>}
               </div>
               <div className="col-span-2">
@@ -362,7 +379,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
-                  <span className="text-green-600 font-bold text-lg">${p.price.toFixed(2)}</span>
+                  <span className="text-green-600 font-bold text-lg">{getCurrencySymbol(p.currency || "USD")}{p.price.toFixed(2)}</span>
                   {token && (
                     <>
                       <button onClick={() => handleEdit(p)} className="text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-medium px-3 py-1.5 rounded-lg transition">Edit</button>
