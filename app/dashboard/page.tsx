@@ -46,6 +46,9 @@ export default function Dashboard() {
   const [importing, setImporting] = useState(false);
   const [autoTagStatus, setAutoTagStatus] = useState("");
   const [autoTagging, setAutoTagging] = useState(false);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState("");
+  const [bulkTypes, setBulkTypes] = useState({ tiktok: true, blog: false, instagram: false });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -113,6 +116,23 @@ export default function Dashboard() {
     loadDashboard(token!);
   }
 
+  async function handleBulkGenerate() {
+    setBulkGenerating(true);
+    setBulkStatus("");
+    const token = localStorage.getItem("token");
+    const types = Object.entries(bulkTypes).filter(([_, v]) => v).map(([k]) => k);
+    if (types.length === 0) { setBulkStatus("Select at least one content type."); setBulkGenerating(false); return; }
+    const res = await fetch(`${API}/content/generate-bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ types }),
+    });
+    const data = await res.json();
+    setBulkStatus(data.message || "Done!");
+    setBulkGenerating(false);
+    loadDashboard(token!);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -155,7 +175,48 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Bulk Generate Content</h2>
+            <p className="text-sm text-gray-500 mb-3">Generate content for all active products at once.</p>
+            <div className="flex gap-4 mb-4">
+              {(["tiktok", "blog", "instagram"] as const).map(type => (
+                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={bulkTypes[type]}
+                    onChange={e => setBulkTypes(prev => ({ ...prev, [type]: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-gray-700 capitalize">{type}</span>
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={handleBulkGenerate}
+              disabled={bulkGenerating}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {bulkGenerating ? "Generating... (this may take a while)" : "Generate for All Products"}
+            </button>
+            {bulkStatus && <p className="text-sm text-green-600 mt-3">{bulkStatus}</p>}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
+            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
+            <button
+              onClick={handleAutoTag}
+              disabled={autoTagging}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
+            </button>
+            {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
             <div className="flex items-center gap-3">
@@ -197,19 +258,6 @@ export default function Dashboard() {
               </label>
               {importStatus && <p className="text-sm text-green-600">{importStatus}</p>}
             </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
-            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
-            <button
-              onClick={handleAutoTag}
-              disabled={autoTagging}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
-              {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
-            </button>
-            {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
           </div>
         </div>
 
