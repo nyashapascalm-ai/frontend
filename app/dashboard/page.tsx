@@ -107,7 +107,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">← Products</button>
+            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">Back to Products</button>
             <h1 className="text-2xl font-bold text-gray-900">Revenue Dashboard</h1>
           </div>
           <span className="text-sm text-gray-500">{summary?.totalProducts} products</span>
@@ -122,7 +122,7 @@ export default function Dashboard() {
             <p className="text-xs text-gray-400 mt-1">All time</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <p className="text-sm text-gray-500 mb-1">Earnings (30 days)</p>
+            <p className="text-sm text-gray-500 mb-1">Earnings 30 days</p>
             <p className="text-3xl font-bold text-blue-600">${summary?.earnings30d}</p>
             <p className="text-xs text-gray-400 mt-1">Last 30 days</p>
           </div>
@@ -166,26 +166,24 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
             <div className="space-y-3">
-              
-                href={`${API}/import/template`}
-                className="block text-sm text-blue-600 hover:text-blue-700 underline"
+              <button
+                onClick={() => window.open(`${API}/import/template`, "_blank")}
+                className="text-sm text-blue-600 hover:text-blue-700 underline block"
               >
                 Download CSV template
-              </a>
-              <div className="flex items-center gap-3">
-                <label className="flex-1">
-                  <input
-                    type="file"
-                    accept=".csv"
-                    className="hidden"
-                    onChange={handleImport}
-                    disabled={importing}
-                  />
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
-                    {importing ? "Importing..." : "Click to upload CSV"}
-                  </div>
-                </label>
-              </div>
+              </button>
+              <label className="block">
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleImport}
+                  disabled={importing}
+                />
+                <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-6 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
+                  {importing ? "Importing..." : "Click to upload CSV file"}
+                </div>
+              </label>
               {importStatus && (
                 <p className="text-sm text-green-600">{importStatus}</p>
               )}
