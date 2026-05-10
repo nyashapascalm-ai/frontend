@@ -10,6 +10,9 @@ type Summary = {
   totalProducts: number;
   totalContent: number;
   topProduct: string | null;
+  awinRevenue: number;
+  awinTransactions: number;
+  awinPending: number;
 };
 
 type ProductStat = {
@@ -168,6 +171,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-8 py-8 space-y-8">
+
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Total Est. Earnings</p>
@@ -188,6 +192,24 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500 mb-1">Top Product</p>
             <p className="text-lg font-bold text-gray-900 truncate">{summary?.topProduct ?? "—"}</p>
             <p className="text-xs text-gray-400 mt-1">{summary?.totalContent} pieces of content</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
+            <p className="text-sm text-gray-500 mb-1">Awin Real Revenue (30d)</p>
+            <p className="text-3xl font-bold text-orange-600">£{summary?.awinRevenue ?? 0}</p>
+            <p className="text-xs text-gray-400 mt-1">Actual commissions earned</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
+            <p className="text-sm text-gray-500 mb-1">Awin Transactions (30d)</p>
+            <p className="text-3xl font-bold text-gray-900">{summary?.awinTransactions ?? 0}</p>
+            <p className="text-xs text-gray-400 mt-1">Total sales recorded</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-yellow-400">
+            <p className="text-sm text-gray-500 mb-1">Pending Transactions</p>
+            <p className="text-3xl font-bold text-yellow-600">{summary?.awinPending ?? 0}</p>
+            <p className="text-xs text-gray-400 mt-1">Awaiting validation</p>
           </div>
         </div>
 
