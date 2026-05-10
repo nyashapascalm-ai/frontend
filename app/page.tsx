@@ -31,6 +31,8 @@ type Content = {
 type Stats = {
   total: number;
   today: number;
+  profitabilityScore: number;
+  trendScore: number;
 };
 
 const API = "https://backend-production-c3f5.up.railway.app";
@@ -155,8 +157,8 @@ export default function Home() {
         <header className="bg-white shadow-sm">
           <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => setSelectedProduct(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
-              <h1 className="text-2xl font-bold text-gray-900">📝 {selectedProduct.name}</h1>
+              <button onClick={() => setSelectedProduct(null)} className="text-sm text-gray-500 hover:text-gray-700">Back</button>
+              <h1 className="text-2xl font-bold text-gray-900">{selectedProduct.name}</h1>
             </div>
             {token && (
               <div className="flex items-center gap-3">
@@ -166,14 +168,14 @@ export default function Home() {
                   <option value="instagram">Instagram Post</option>
                 </select>
                 <button onClick={() => handleGenerate(selectedProduct.id)} disabled={generating} className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition disabled:opacity-50">
-                  {generating ? "Generating..." : "✨ Generate Content"}
+                  {generating ? "Generating..." : "Generate Content"}
                 </button>
               </div>
             )}
           </div>
         </header>
         <main className="max-w-5xl mx-auto px-8 py-8 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-5 gap-4">
             <div className="bg-white rounded-2xl shadow-sm p-5">
               <p className="text-sm text-gray-500">Total Clicks</p>
               <p className="text-3xl font-bold text-gray-900">{stats?.total ?? "—"}</p>
@@ -186,11 +188,19 @@ export default function Home() {
               <p className="text-sm text-gray-500">Commission</p>
               <p className="text-3xl font-bold text-orange-600">{selectedProduct.commissionRate ? `${selectedProduct.commissionRate}%` : "—"}</p>
             </div>
+            <div className="bg-white rounded-2xl shadow-sm p-5">
+              <p className="text-sm text-gray-500">Profitability</p>
+              <p className="text-3xl font-bold text-purple-600">${stats?.profitabilityScore ?? "—"}</p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm p-5">
+              <p className="text-sm text-gray-500">Trend Score</p>
+              <p className="text-3xl font-bold text-blue-600">{stats?.trendScore ?? "—"}</p>
+            </div>
           </div>
 
           {trackingUrl && (
             <div className="bg-white rounded-2xl shadow-sm p-5">
-              <p className="text-sm font-medium text-gray-700 mb-2">🔗 Tracking Link</p>
+              <p className="text-sm font-medium text-gray-700 mb-2">Tracking Link</p>
               <div className="flex items-center gap-3">
                 <code className="bg-gray-100 rounded-lg px-3 py-2 text-sm flex-1 truncate">{trackingUrl}</code>
                 <button onClick={() => navigator.clipboard.writeText(trackingUrl)} className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg transition">Copy</button>
@@ -248,7 +258,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">🛍️ AI Affiliate Engine</h1>
+          <h1 className="text-2xl font-bold text-gray-900">AI Affiliate Engine</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">{products.length} products</span>
             {token ? (
@@ -343,7 +353,7 @@ export default function Home() {
                     </div>
                     <p className="text-sm text-gray-500">{p.description || "No description"}</p>
                     {p.commissionRate && <p className="text-xs text-orange-600 mt-0.5">Commission: {p.commissionRate}%</p>}
-                    {p.slug && <p className="text-xs text-blue-500 mt-0.5">🔗 /track/go/{p.slug}</p>}
+                    {p.slug && <p className="text-xs text-blue-500 mt-0.5">/track/go/{p.slug}</p>}
                   </div>
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
