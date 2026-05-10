@@ -56,6 +56,8 @@ export default function Dashboard() {
   const [sendingReport, setSendingReport] = useState(false);
   const [publishingBlogs, setPublishingBlogs] = useState(false);
   const [blogPublishStatus, setBlogPublishStatus] = useState("");
+  const [pinning, setPinning] = useState(false);
+  const [pinStatus, setPinStatus] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -164,6 +166,19 @@ export default function Dashboard() {
     loadDashboard(token!);
   }
 
+  async function handlePinAllProducts() {
+    setPinning(true);
+    setPinStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/pinterest/pin-all-products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setPinStatus(data.message || "Done!");
+    setPinning(false);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -266,16 +281,21 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
-            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
+            <h2 className="font-semibold text-gray-900 mb-4">Pin to Pinterest</h2>
+            <p className="text-sm text-gray-500 mb-4">Auto-pin all active products to your Baby & Parenting Deals board on Pinterest.</p>
             <button
-              onClick={handleAutoTag}
-              disabled={autoTagging}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+              onClick={handlePinAllProducts}
+              disabled={pinning}
+              className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
             >
-              {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
+              {pinning ? "Pinning..." : "Pin All Products"}
             </button>
-            {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
+            {pinStatus && (
+              <p className={`text-sm mt-3 ${pinStatus.includes("failed") && !pinStatus.includes("0 failed") ? "text-red-500" : "text-green-600"}`}>
+                {pinStatus}
+              </p>
+            )}
+            <p className="text-xs text-gray-400 mt-2">⚠️ Requires Pinterest API approval</p>
           </div>
         </div>
 
@@ -318,6 +338,21 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
+            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
+            <button
+              onClick={handleAutoTag}
+              disabled={autoTagging}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
+            </button>
+            {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
             <button
               onClick={() => window.open(`${API}/import/template`, "_blank")}
@@ -332,6 +367,24 @@ export default function Dashboard() {
               </div>
             </label>
             {importStatus && <p className="text-sm text-green-600 mt-2">{importStatus}</p>}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Quick Links</h2>
+            <div className="space-y-2">
+              <a href="https://hotpink-jay-474959.hostingersite.com" target="_blank" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <span className="text-sm font-medium text-gray-700">WordPress Site</span>
+                <span className="text-xs text-gray-400">View →</span>
+              </a>
+              <a href="https://uk.pinterest.com/mumcircle3/baby-parenting-deals/" target="_blank" className="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                <span className="text-sm font-medium text-red-700">Pinterest Board</span>
+                <span className="text-xs text-red-400">View →</span>
+              </a>
+              <a href="https://ui.awin.com/awin/affiliate/2660114" target="_blank" className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                <span className="text-sm font-medium text-blue-700">Awin Dashboard</span>
+                <span className="text-xs text-blue-400">View →</span>
+              </a>
+            </div>
           </div>
         </div>
 
