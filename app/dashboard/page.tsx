@@ -39,6 +39,9 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [products, setProducts] = useState<ProductStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alertEmail, setAlertEmail] = useState("nyashapascalm@gmail.com");
+  const [alertStatus, setAlertStatus] = useState("");
+  const [checkingAlerts, setCheckingAlerts] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -52,7 +55,29 @@ export default function Dashboard() {
       });
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><p className="text-gray-400">Loading dashboard...</p></div>;
+  async function checkAlerts() {
+    setCheckingAlerts(true);
+    setAlertStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/alerts/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ email: alertEmail }),
+    });
+    const data = await res.json();
+    if (data.alerts?.length > 0) {
+      setAlertStatus(`Alert sent! ${data.alerts.length} spike(s) detected.`);
+    } else {
+      setAlertStatus("No spikes detected right now.");
+    }
+    setCheckingAlerts(false);
+  }
+
+  if (loading) return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <p className="text-gray-400">Loading dashboard...</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -90,6 +115,30 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
+          <div className="flex items-center gap-3">
+            <input
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="your@email.com"
+              value={alertEmail}
+              onChange={e => setAlertEmail(e.target.value)}
+            />
+            <button
+              onClick={checkAlerts}
+              disabled={checkingAlerts}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
+            >
+              {checkingAlerts ? "Checking..." : "Check Alerts"}
+            </button>
+          </div>
+          {alertStatus && (
+            <p className={`text-sm mt-3 ${alertStatus.includes("sent") ? "text-green-600" : "text-gray-500"}`}>
+              {alertStatus}
+            </p>
+          )}
+        </div>
+
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900">Product Performance</h2>
@@ -99,7 +148,7 @@ export default function Dashboard() {
               <tr>
                 <th className="px-6 py-3 text-left">Product</th>
                 <th className="px-6 py-3 text-right">Clicks</th>
-                <th className="px-6 py-3 text-right">7d Clicks</th>
+                <th className="px-6 py-3 text-right">7d</th>
                 <th className="px-6 py-3 text-right">Commission</th>
                 <th className="px-6 py-3 text-right">Est. Earnings</th>
                 <th className="px-6 py-3 text-right">30d Earnings</th>
