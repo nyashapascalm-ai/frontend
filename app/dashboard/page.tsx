@@ -42,18 +42,22 @@ export default function Dashboard() {
   const [alertEmail, setAlertEmail] = useState("nyashapascalm@gmail.com");
   const [alertStatus, setAlertStatus] = useState("");
   const [checkingAlerts, setCheckingAlerts] = useState(false);
+  const [importStatus, setImportStatus] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/login"); return; }
-    fetch(`${API}/dashboard`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(data => {
-        setSummary(data.summary);
-        setProducts(data.products);
-        setLoading(false);
-      });
+    loadDashboard(token);
   }, []);
+
+  async function loadDashboard(token: string) {
+    const res = await fetch(`${API}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setSummary(data.summary);
+    setProducts(data.products);
+    setLoading(false);
+  }
 
   async function checkAlerts() {
     setCheckingAlerts(true);
@@ -71,6 +75,25 @@ export default function Dashboard() {
       setAlertStatus("No spikes detected right now.");
     }
     setCheckingAlerts(false);
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportStatus("");
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API}/import/csv`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    setImportStatus(data.message || "Import complete!");
+    setImporting(false);
+    if (res.ok) loadDashboard(token!);
   }
 
   if (loading) return (
@@ -115,28 +138,59 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
-          <div className="flex items-center gap-3">
-            <input
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="your@email.com"
-              value={alertEmail}
-              onChange={e => setAlertEmail(e.target.value)}
-            />
-            <button
-              onClick={checkAlerts}
-              disabled={checkingAlerts}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
-            >
-              {checkingAlerts ? "Checking..." : "Check Alerts"}
-            </button>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
+            <div className="flex items-center gap-3">
+              <input
+                className="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="your@email.com"
+                value={alertEmail}
+                onChange={e => setAlertEmail(e.target.value)}
+              />
+              <button
+                onClick={checkAlerts}
+                disabled={checkingAlerts}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
+              >
+                {checkingAlerts ? "Checking..." : "Check Alerts"}
+              </button>
+            </div>
+            {alertStatus && (
+              <p className={`text-sm mt-3 ${alertStatus.includes("sent") ? "text-green-600" : "text-gray-500"}`}>
+                {alertStatus}
+              </p>
+            )}
           </div>
-          {alertStatus && (
-            <p className={`text-sm mt-3 ${alertStatus.includes("sent") ? "text-green-600" : "text-gray-500"}`}>
-              {alertStatus}
-            </p>
-          )}
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
+            <div className="space-y-3">
+              
+                href={`${API}/import/template`}
+                className="block text-sm text-blue-600 hover:text-blue-700 underline"
+              >
+                Download CSV template
+              </a>
+              <div className="flex items-center gap-3">
+                <label className="flex-1">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={handleImport}
+                    disabled={importing}
+                  />
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
+                    {importing ? "Importing..." : "Click to upload CSV"}
+                  </div>
+                </label>
+              </div>
+              {importStatus && (
+                <p className="text-sm text-green-600">{importStatus}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
