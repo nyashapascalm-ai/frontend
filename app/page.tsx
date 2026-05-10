@@ -38,7 +38,6 @@ type Stats = {
 
 const API = "https://backend-production-c3f5.up.railway.app";
 const TRACK_BASE = "https://backend-production-c3f5.up.railway.app/track/go";
-
 const CURRENCIES = ["USD", "GBP", "EUR", "CAD", "AUD", "JPY", "CHF", "INR", "NGN", "ZAR"];
 
 function getCurrencySymbol(currency: string) {
@@ -273,7 +272,10 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-900">AI Affiliate Engine</h1>
             {token && (
-              <button onClick={() => router.push("/dashboard")} className="text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg transition">Dashboard</button>
+              <>
+                <button onClick={() => router.push("/dashboard")} className="text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg transition">Dashboard</button>
+                <button onClick={() => router.push("/awin")} className="text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1.5 rounded-lg transition">Awin</button>
+              </>
             )}
           </div>
           <div className="flex items-center gap-4">
