@@ -49,6 +49,8 @@ export default function Dashboard() {
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkTypes, setBulkTypes] = useState({ tiktok: true, blog: false, instagram: false });
+  const [reportStatus, setReportStatus] = useState("");
+  const [sendingReport, setSendingReport] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -131,6 +133,20 @@ export default function Dashboard() {
     setBulkStatus(data.message || "Done!");
     setBulkGenerating(false);
     loadDashboard(token!);
+  }
+
+  async function sendWeeklyReport() {
+    setSendingReport(true);
+    setReportStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/reports/weekly`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ email: alertEmail }),
+    });
+    const data = await res.json();
+    setReportStatus(data.message || "Report sent!");
+    setSendingReport(false);
   }
 
   if (loading) return (
@@ -216,7 +232,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
             <div className="flex items-center gap-3">
@@ -231,7 +247,7 @@ export default function Dashboard() {
                 disabled={checkingAlerts}
                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
               >
-                {checkingAlerts ? "Checking..." : "Check"}
+                {checkingAlerts ? "..." : "Check"}
               </button>
             </div>
             {alertStatus && (
@@ -242,22 +258,33 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Weekly Report</h2>
+            <p className="text-sm text-gray-500 mb-4">Send a full performance report to your inbox right now.</p>
+            <button
+              onClick={sendWeeklyReport}
+              disabled={sendingReport}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {sendingReport ? "Sending..." : "Send Weekly Report"}
+            </button>
+            {reportStatus && <p className="text-sm text-green-600 mt-3">{reportStatus}</p>}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => window.open(`${API}/import/template`, "_blank")}
-                className="text-sm text-blue-600 hover:text-blue-700 underline block"
-              >
-                Download CSV template
-              </button>
-              <label className="block">
-                <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={importing} />
-                <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
-                  {importing ? "Importing..." : "Click to upload CSV"}
-                </div>
-              </label>
-              {importStatus && <p className="text-sm text-green-600">{importStatus}</p>}
-            </div>
+            <button
+              onClick={() => window.open(`${API}/import/template`, "_blank")}
+              className="text-sm text-blue-600 hover:text-blue-700 underline block mb-3"
+            >
+              Download CSV template
+            </button>
+            <label className="block">
+              <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={importing} />
+              <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
+                {importing ? "Importing..." : "Click to upload CSV"}
+              </div>
+            </label>
+            {importStatus && <p className="text-sm text-green-600 mt-2">{importStatus}</p>}
           </div>
         </div>
 
