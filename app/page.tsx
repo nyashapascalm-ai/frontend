@@ -258,7 +258,12 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">AI Affiliate Engine</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-gray-900">AI Affiliate Engine</h1>
+            {token && (
+              <button onClick={() => router.push("/dashboard")} className="text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 rounded-lg transition">Dashboard</button>
+            )}
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">{products.length} products</span>
             {token ? (
