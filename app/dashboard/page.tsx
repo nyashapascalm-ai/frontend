@@ -54,6 +54,8 @@ export default function Dashboard() {
   const [bulkTypes, setBulkTypes] = useState({ tiktok: true, blog: false, instagram: false });
   const [reportStatus, setReportStatus] = useState("");
   const [sendingReport, setSendingReport] = useState(false);
+  const [publishingBlogs, setPublishingBlogs] = useState(false);
+  const [blogPublishStatus, setBlogPublishStatus] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -79,11 +81,7 @@ export default function Dashboard() {
       body: JSON.stringify({ email: alertEmail }),
     });
     const data = await res.json();
-    if (data.alerts?.length > 0) {
-      setAlertStatus(`Alert sent! ${data.alerts.length} spike(s) detected.`);
-    } else {
-      setAlertStatus("No spikes detected right now.");
-    }
+    setAlertStatus(data.alerts?.length > 0 ? `Alert sent! ${data.alerts.length} spike(s) detected.` : "No spikes detected right now.");
     setCheckingAlerts(false);
   }
 
@@ -152,6 +150,20 @@ export default function Dashboard() {
     setSendingReport(false);
   }
 
+  async function handlePublishAllBlogs() {
+    setPublishingBlogs(true);
+    setBlogPublishStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/wordpress/publish-all-blogs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setBlogPublishStatus(data.message || "Done!");
+    setPublishingBlogs(false);
+    loadDashboard(token!);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -213,7 +225,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Generate Content</h2>
             <p className="text-sm text-gray-500 mb-3">Generate content for all active products at once.</p>
@@ -235,9 +247,22 @@ export default function Dashboard() {
               disabled={bulkGenerating}
               className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
             >
-              {bulkGenerating ? "Generating... (this may take a while)" : "Generate for All Products"}
+              {bulkGenerating ? "Generating..." : "Generate for All Products"}
             </button>
             {bulkStatus && <p className="text-sm text-green-600 mt-3">{bulkStatus}</p>}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Publish to WordPress</h2>
+            <p className="text-sm text-gray-500 mb-4">Auto-publish all draft blog posts to mumdeals.co.uk with affiliate links embedded.</p>
+            <button
+              onClick={handlePublishAllBlogs}
+              disabled={publishingBlogs}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+            >
+              {publishingBlogs ? "Publishing..." : "Publish All Blog Posts"}
+            </button>
+            {blogPublishStatus && <p className="text-sm text-green-600 mt-3">{blogPublishStatus}</p>}
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
