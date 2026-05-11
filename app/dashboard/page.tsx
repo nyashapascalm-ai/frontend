@@ -35,7 +35,7 @@ type ProductStat = {
 };
 
 const API = "https://backend-production-c3f5.up.railway.app";
-const CATEGORIES = ["Baby & Parenting", "Home & Garden", "Pet Care", "Health & Wellness", "Tech & AI Tools", "Furniture", "Fashion", "Education", "Business"];
+const CATEGORIES = ["Parenting", "Home Office", "AI Tools", "Education", "Business", "Baby & Parenting", "Home & Garden", "Tech & AI Tools", "Pet Care", "Health & Wellness", "Furniture", "Fashion"];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -61,8 +61,7 @@ export default function Dashboard() {
   const [addingImages, setAddingImages] = useState(false);
   const [imageStatus, setImageStatus] = useState("");
 
-  // Comparison post state
-  const [compCategory, setCompCategory] = useState("Baby & Parenting");
+  const [compCategory, setCompCategory] = useState("Parenting");
   const [compMaxPrice, setCompMaxPrice] = useState("500");
   const [compTitle, setCompTitle] = useState("");
   const [generatingComparison, setGeneratingComparison] = useState(false);
@@ -264,7 +263,6 @@ export default function Dashboard() {
 
       <main className="max-w-6xl mx-auto px-8 py-8 space-y-8">
 
-        {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Total Est. Earnings</p>
@@ -286,7 +284,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Awin Revenue */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Real Revenue (30d)</p>
@@ -363,7 +360,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Generate Content</h2>
@@ -465,7 +461,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Product Performance Table */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900">Product Performance</h2>
