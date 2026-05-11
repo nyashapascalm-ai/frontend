@@ -24,7 +24,6 @@ type ProductStat = {
   commissionRate?: number;
   status: string;
   slug?: string;
-  profitabilityScore?: number;
   trendScore?: number;
   totalClicks: number;
   clicksToday: number;
@@ -36,6 +35,7 @@ type ProductStat = {
 };
 
 const API = "https://backend-production-c3f5.up.railway.app";
+const CATEGORIES = ["Baby & Parenting", "Home & Garden", "Pet Care", "Health & Wellness", "Tech & AI Tools", "Furniture", "Fashion", "Education", "Business"];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function Dashboard() {
   const [autoTagging, setAutoTagging] = useState(false);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkStatus, setBulkStatus] = useState("");
-  const [bulkTypes, setBulkTypes] = useState({ tiktok: true, blog: false, instagram: false });
+  const [bulkTypes, setBulkTypes] = useState({ tiktok: false, blog: true, instagram: false });
   const [reportStatus, setReportStatus] = useState("");
   const [sendingReport, setSendingReport] = useState(false);
   const [publishingBlogs, setPublishingBlogs] = useState(false);
@@ -60,6 +60,15 @@ export default function Dashboard() {
   const [pinStatus, setPinStatus] = useState("");
   const [addingImages, setAddingImages] = useState(false);
   const [imageStatus, setImageStatus] = useState("");
+
+  // Comparison post state
+  const [compCategory, setCompCategory] = useState("Baby & Parenting");
+  const [compMaxPrice, setCompMaxPrice] = useState("500");
+  const [compTitle, setCompTitle] = useState("");
+  const [generatingComparison, setGeneratingComparison] = useState(false);
+  const [comparisonStatus, setComparisonStatus] = useState("");
+  const [publishingComparison, setPublishingComparison] = useState(false);
+  const [lastComparisonId, setLastComparisonId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -194,6 +203,47 @@ export default function Dashboard() {
     setAddingImages(false);
   }
 
+  async function handleGenerateComparison() {
+    setGeneratingComparison(true);
+    setComparisonStatus("");
+    setLastComparisonId(null);
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/content/generate-comparison`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        category: compCategory,
+        maxPrice: compMaxPrice,
+        title: compTitle || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setComparisonStatus(`✅ ${data.message} — comparing ${data.productsCompared} products`);
+      setLastComparisonId(data.content?.id || null);
+    } else {
+      setComparisonStatus(`❌ ${data.error}`);
+    }
+    setGeneratingComparison(false);
+  }
+
+  async function handlePublishComparison() {
+    if (!lastComparisonId) return;
+    setPublishingComparison(true);
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/wordpress/publish/${lastComparisonId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setComparisonStatus(`✅ Published! ${data.postUrl}`);
+    } else {
+      setComparisonStatus(`❌ Publish failed: ${data.error}`);
+    }
+    setPublishingComparison(false);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -205,7 +255,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">Back to Products</button>
+            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">← Products</button>
             <h1 className="text-2xl font-bold text-gray-900">Revenue Dashboard</h1>
           </div>
           <span className="text-sm text-gray-500">{summary?.totalProducts} products</span>
@@ -214,16 +264,15 @@ export default function Dashboard() {
 
       <main className="max-w-6xl mx-auto px-8 py-8 space-y-8">
 
+        {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Total Est. Earnings</p>
             <p className="text-3xl font-bold text-green-600">${summary?.totalEarnings}</p>
-            <p className="text-xs text-gray-400 mt-1">All time</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Earnings 30 days</p>
             <p className="text-3xl font-bold text-blue-600">${summary?.earnings30d}</p>
-            <p className="text-xs text-gray-400 mt-1">Last 30 days</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Total Clicks</p>
@@ -237,46 +286,96 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Awin Revenue */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Real Revenue (30d)</p>
             <p className="text-3xl font-bold text-orange-600">£{summary?.awinRevenue ?? 0}</p>
-            <p className="text-xs text-gray-400 mt-1">Actual commissions earned</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Transactions (30d)</p>
             <p className="text-3xl font-bold text-gray-900">{summary?.awinTransactions ?? 0}</p>
-            <p className="text-xs text-gray-400 mt-1">Total sales recorded</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-yellow-400">
             <p className="text-sm text-gray-500 mb-1">Pending Transactions</p>
             <p className="text-3xl font-bold text-yellow-600">{summary?.awinPending ?? 0}</p>
-            <p className="text-xs text-gray-400 mt-1">Awaiting validation</p>
           </div>
         </div>
 
+        {/* Comparison Post Generator */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-purple-100">
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">🏆 Comparison Post Generator</h2>
+          <p className="text-sm text-gray-500 mb-4">Generate "Best X under £Y" style posts that rank faster and convert 3-5x better than single product reviews.</p>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                value={compCategory}
+                onChange={e => setCompCategory(e.target.value)}
+              >
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Max Price (£)</label>
+              <input
+                type="number"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                value={compMaxPrice}
+                onChange={e => setCompMaxPrice(e.target.value)}
+                placeholder="500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Custom Title (optional)</label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                value={compTitle}
+                onChange={e => setCompTitle(e.target.value)}
+                placeholder={`Best ${compCategory} Under £${compMaxPrice} UK 2026`}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleGenerateComparison}
+              disabled={generatingComparison}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
+            >
+              {generatingComparison ? "Generating... (30-60 secs)" : "Generate Comparison Post"}
+            </button>
+            {lastComparisonId && (
+              <button
+                onClick={handlePublishComparison}
+                disabled={publishingComparison}
+                className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
+              >
+                {publishingComparison ? "Publishing..." : "Publish to WordPress →"}
+              </button>
+            )}
+          </div>
+          {comparisonStatus && (
+            <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
+              {comparisonStatus}
+            </p>
+          )}
+        </div>
+
+        {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Bulk Generate Content</h2>
-            <p className="text-sm text-gray-500 mb-3">Generate content for all active products at once.</p>
             <div className="flex gap-4 mb-4">
               {(["tiktok", "blog", "instagram"] as const).map(type => (
                 <label key={type} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={bulkTypes[type]}
-                    onChange={e => setBulkTypes(prev => ({ ...prev, [type]: e.target.checked }))}
-                    className="rounded"
-                  />
+                  <input type="checkbox" checked={bulkTypes[type]} onChange={e => setBulkTypes(prev => ({ ...prev, [type]: e.target.checked }))} className="rounded" />
                   <span className="text-sm text-gray-700 capitalize">{type}</span>
                 </label>
               ))}
             </div>
-            <button
-              onClick={handleBulkGenerate}
-              disabled={bulkGenerating}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
+            <button onClick={handleBulkGenerate} disabled={bulkGenerating} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
               {bulkGenerating ? "Generating..." : "Generate for All Products"}
             </button>
             {bulkStatus && <p className="text-sm text-green-600 mt-3">{bulkStatus}</p>}
@@ -284,12 +383,8 @@ export default function Dashboard() {
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Publish to WordPress</h2>
-            <p className="text-sm text-gray-500 mb-4">Auto-publish all draft blog posts to mumdeals.co.uk with affiliate links embedded.</p>
-            <button
-              onClick={handlePublishAllBlogs}
-              disabled={publishingBlogs}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
+            <p className="text-sm text-gray-500 mb-4">Auto-publish all draft blog posts to mumdeals.co.uk.</p>
+            <button onClick={handlePublishAllBlogs} disabled={publishingBlogs} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
               {publishingBlogs ? "Publishing..." : "Publish All Blog Posts"}
             </button>
             {blogPublishStatus && <p className="text-sm text-green-600 mt-3">{blogPublishStatus}</p>}
@@ -297,13 +392,9 @@ export default function Dashboard() {
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Add Featured Images</h2>
-            <p className="text-sm text-gray-500 mb-4">Auto-fetch relevant images from Unsplash and set them as featured images on all published posts.</p>
-            <button
-              onClick={handleAddFeaturedImages}
-              disabled={addingImages}
-              className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
-              {addingImages ? "Adding Images... (may take a minute)" : "Add Featured Images"}
+            <p className="text-sm text-gray-500 mb-4">Auto-fetch images from Unsplash for all published posts.</p>
+            <button onClick={handleAddFeaturedImages} disabled={addingImages} className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
+              {addingImages ? "Adding Images..." : "Add Featured Images"}
             </button>
             {imageStatus && <p className="text-sm text-green-600 mt-3">{imageStatus}</p>}
           </div>
@@ -312,82 +403,36 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Pin to Pinterest</h2>
-            <p className="text-sm text-gray-500 mb-4">Auto-pin all active products to your Baby & Parenting Deals board.</p>
-            <button
-              onClick={handlePinAllProducts}
-              disabled={pinning}
-              className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
+            <p className="text-sm text-gray-500 mb-4">Auto-pin all active products to your board.</p>
+            <button onClick={handlePinAllProducts} disabled={pinning} className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
               {pinning ? "Pinning..." : "Pin All Products"}
             </button>
-            {pinStatus && (
-              <p className={`text-sm mt-3 ${pinStatus.includes("failed") && !pinStatus.includes("0 failed") ? "text-red-500" : "text-green-600"}`}>
-                {pinStatus}
-              </p>
-            )}
+            {pinStatus && <p className="text-sm mt-3 text-green-600">{pinStatus}</p>}
             <p className="text-xs text-gray-400 mt-2">⚠️ Requires Pinterest API approval</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Trend Alerts</h2>
-            <div className="flex items-center gap-3">
-              <input
-                className="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="your@email.com"
-                value={alertEmail}
-                onChange={e => setAlertEmail(e.target.value)}
-              />
-              <button
-                onClick={checkAlerts}
-                disabled={checkingAlerts}
-                className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50"
-              >
-                {checkingAlerts ? "..." : "Check"}
-              </button>
-            </div>
-            {alertStatus && (
-              <p className={`text-sm mt-3 ${alertStatus.includes("sent") ? "text-green-600" : "text-gray-500"}`}>
-                {alertStatus}
-              </p>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Weekly Report</h2>
-            <p className="text-sm text-gray-500 mb-4">Send a full performance report to your inbox right now.</p>
-            <button
-              onClick={sendWeeklyReport}
-              disabled={sendingReport}
-              className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
-              {sendingReport ? "Sending..." : "Send Weekly Report"}
-            </button>
-            {reportStatus && <p className="text-sm text-green-600 mt-3">{reportStatus}</p>}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
-            <p className="text-sm text-gray-500 mb-4">Use AI to automatically classify all products into the right niche categories.</p>
-            <button
-              onClick={handleAutoTag}
-              disabled={autoTagging}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-            >
+            <p className="text-sm text-gray-500 mb-4">AI classifies all products into the right niche categories.</p>
+            <button onClick={handleAutoTag} disabled={autoTagging} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
               {autoTagging ? "Tagging..." : "Auto-Tag All Products"}
             </button>
             {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
-            <button
-              onClick={() => window.open(`${API}/import/template`, "_blank")}
-              className="text-sm text-blue-600 hover:text-blue-700 underline block mb-3"
-            >
-              Download CSV template
+            <h2 className="font-semibold text-gray-900 mb-4">Weekly Report</h2>
+            <p className="text-sm text-gray-500 mb-4">Send a full performance report to your inbox.</p>
+            <button onClick={sendWeeklyReport} disabled={sendingReport} className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition disabled:opacity-50 w-full">
+              {sendingReport ? "Sending..." : "Send Weekly Report"}
             </button>
+            {reportStatus && <p className="text-sm text-green-600 mt-3">{reportStatus}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="font-semibold text-gray-900 mb-4">Bulk Import Products</h2>
             <label className="block">
               <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={importing} />
               <div className="border-2 border-dashed border-gray-300 rounded-lg px-4 py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition text-center">
@@ -420,6 +465,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Product Performance Table */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900">Product Performance</h2>
@@ -432,14 +478,12 @@ export default function Dashboard() {
                 <th className="px-6 py-3 text-right">7d</th>
                 <th className="px-6 py-3 text-right">Commission</th>
                 <th className="px-6 py-3 text-right">Est. Earnings</th>
-                <th className="px-6 py-3 text-right">30d Earnings</th>
-                <th className="px-6 py-3 text-right">Trend</th>
                 <th className="px-6 py-3 text-right">Content</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {products.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push("/")}>
+                <tr key={p.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-blue-100 text-blue-700 rounded-lg w-8 h-8 flex items-center justify-center font-bold text-sm">{p.name[0]}</div>
@@ -448,7 +492,6 @@ export default function Dashboard() {
                         <div className="flex items-center gap-1 mt-0.5">
                           {p.network && <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">{p.network}</span>}
                           {p.category && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{p.category}</span>}
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${p.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{p.status}</span>
                         </div>
                       </div>
                     </div>
@@ -457,18 +500,13 @@ export default function Dashboard() {
                   <td className="px-6 py-4 text-right text-sm text-gray-700">{p.clicks7d}</td>
                   <td className="px-6 py-4 text-right text-sm text-orange-600">{p.commissionRate ? `${p.commissionRate}%` : "—"}</td>
                   <td className="px-6 py-4 text-right text-sm font-semibold text-green-600">${p.estimatedEarnings}</td>
-                  <td className="px-6 py-4 text-right text-sm text-blue-600">${p.earnings30d}</td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${(p.trendScore ?? 0) >= 1 ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                      {p.trendScore ?? 0}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 text-right text-sm text-gray-700">{p.contentCount}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
       </main>
     </div>
   );
