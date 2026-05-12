@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 type Feed = {
   id: string;
   name: string;
-  products: number;
+  category: string;
   currency: string;
 };
 
@@ -31,6 +31,10 @@ const COMMISSION_RATES: Record<string, number> = {
   "101126": 10,
   "115013": 15,
   "443": 8,
+  "1936": 8,
+  "15112": 3,
+  "28347": 10,
+  "62671": 10,
 };
 
 export default function AwinPage() {
@@ -69,7 +73,6 @@ export default function AwinPage() {
     const data = await res.json();
 
     let filtered = data.products || [];
-
     if (minPrice) filtered = filtered.filter((p: FeedProduct) => p.price >= parseFloat(minPrice));
     if (maxPrice) filtered = filtered.filter((p: FeedProduct) => p.price <= parseFloat(maxPrice));
     if (inStockOnly) filtered = filtered.filter((p: FeedProduct) => p.inStock === "1");
@@ -161,7 +164,7 @@ export default function AwinPage() {
                   className="bg-white rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition"
                 >
                   <h3 className="font-semibold text-gray-900">{f.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{f.products.toLocaleString()} products</p>
+                  <p className="text-sm text-gray-500 mt-1">{f.category}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{f.currency}</span>
                     {COMMISSION_RATES[f.id] && (
