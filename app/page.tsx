@@ -176,8 +176,26 @@ export default function Home() {
     loadStats(p.id);
   }
 
-  const networks = ["Amazon", "Awin", "Impact", "ClickBank", "Other"];
-  const categories = ["AI Tools", "Finance", "Fitness", "Home Office", "Tech", "Health", "Beauty", "Parenting", "Home & Garden", "Fashion", "Other"];
+  const networks = ["Awin", "Amazon", "Impact", "ClickBank", "CJ Affiliate", "Other"];
+  const categories = [
+    "Baby & Parenting",
+    "Home & Garden",
+    "Tech & AI Tools",
+    "Health & Wellness",
+    "Pet Care",
+    "Finance and Insurance",
+    "Travel and Outdoors",
+    "Start up and Investment",
+    "Parenting",
+    "Home Office",
+    "AI Tools",
+    "Education",
+    "Business",
+    "Furniture",
+    "Fashion",
+    "Beauty",
+    "Fitness",
+  ];
 
   if (selectedProduct) {
     const trackingUrl = selectedProduct.slug ? `${TRACK_BASE}/${selectedProduct.slug}` : null;
@@ -374,7 +392,7 @@ export default function Home() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug (for tracking link)</label>
-                <input className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. mamas-papas" value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} />
+                <input className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. coverforyou" value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
