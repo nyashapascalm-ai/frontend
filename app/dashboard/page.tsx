@@ -78,6 +78,8 @@ export default function Dashboard() {
   const [pinStatus, setPinStatus] = useState("");
   const [addingImages, setAddingImages] = useState(false);
   const [imageStatus, setImageStatus] = useState("");
+  const [sendingWeeklyDeals, setSendingWeeklyDeals] = useState(false);
+  const [weeklyDealsStatus, setWeeklyDealsStatus] = useState("");
 
   const [compCategory, setCompCategory] = useState("Baby & Parenting");
   const [compMaxPrice, setCompMaxPrice] = useState("500");
@@ -178,6 +180,19 @@ export default function Dashboard() {
     const data = await res.json();
     setReportStatus(data.message || "Report sent!");
     setSendingReport(false);
+  }
+
+  async function handleSendWeeklyDeals() {
+    setSendingWeeklyDeals(true);
+    setWeeklyDealsStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/send-weekly-deals`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setWeeklyDealsStatus(data.message || "Done!");
+    setSendingWeeklyDeals(false);
   }
 
   async function handlePublishAllBlogs() {
@@ -343,7 +358,7 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-medium text-gray-600 mb-1">Custom Title (optional)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Custom Title (optional)</label>
               <input
                 type="text"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -442,6 +457,32 @@ export default function Dashboard() {
             </button>
             {reportStatus && <p className="text-sm text-green-600 mt-3">{reportStatus}</p>}
           </div>
+        </div>
+
+        {/* Email & Subscribers */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-pink-100">
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">📧 Email & Subscribers</h2>
+          <p className="text-sm text-gray-500 mb-4">Send your weekly deals email to all active subscribers. Auto-picks top 6 products by commission rate.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleSendWeeklyDeals}
+              disabled={sendingWeeklyDeals}
+              className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
+            >
+              {sendingWeeklyDeals ? "Sending..." : "📨 Send Weekly Deals Email"}
+            </button>
+            
+              href={`${API}/subscribers`}
+              target="_blank"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-5 py-2 rounded-lg transition"
+            >
+              View Subscribers
+            </a>
+          </div>
+          {weeklyDealsStatus && (
+            <p className="text-sm mt-3 text-green-600">{weeklyDealsStatus}</p>
+          )}
+          <p className="text-xs text-gray-400 mt-3">⚡ Runs automatically every Monday at 9am once cron is set up</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
