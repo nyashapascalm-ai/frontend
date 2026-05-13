@@ -35,7 +35,25 @@ type ProductStat = {
 };
 
 const API = "https://backend-production-c3f5.up.railway.app";
-const CATEGORIES = ["Parenting", "Home Office", "AI Tools", "Education", "Business", "Baby & Parenting", "Home & Garden", "Tech & AI Tools", "Pet Care", "Health & Wellness", "Furniture", "Fashion"];
+const CATEGORIES = [
+  "Baby & Parenting",
+  "Home & Garden",
+  "Tech & AI Tools",
+  "Health & Wellness",
+  "Pet Care",
+  "Finance and Insurance",
+  "Travel and Outdoors",
+  "Start up and Investment",
+  "Parenting",
+  "Home Office",
+  "AI Tools",
+  "Education",
+  "Business",
+  "Furniture",
+  "Fashion",
+  "Beauty",
+  "Fitness",
+];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -61,7 +79,7 @@ export default function Dashboard() {
   const [addingImages, setAddingImages] = useState(false);
   const [imageStatus, setImageStatus] = useState("");
 
-  const [compCategory, setCompCategory] = useState("Parenting");
+  const [compCategory, setCompCategory] = useState("Baby & Parenting");
   const [compMaxPrice, setCompMaxPrice] = useState("500");
   const [compTitle, setCompTitle] = useState("");
   const [generatingComparison, setGeneratingComparison] = useState(false);
@@ -325,7 +343,7 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Custom Title (optional)</label>
+              <label className="block text-xs font-medium text-gray-medium text-gray-600 mb-1">Custom Title (optional)</label>
               <input
                 type="text"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
