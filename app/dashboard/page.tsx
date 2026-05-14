@@ -67,6 +67,9 @@ export default function Dashboard() {
   const [sendingWeeklyDeals, setSendingWeeklyDeals] = useState(false);
   const [weeklyDealsStatus, setWeeklyDealsStatus] = useState("");
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+  const [staleCount, setStaleCount] = useState<number | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState("");
   const [compCategory, setCompCategory] = useState("Baby & Parenting");
   const [compMaxPrice, setCompMaxPrice] = useState("500");
   const [compTitle, setCompTitle] = useState("");
@@ -101,6 +104,11 @@ export default function Dashboard() {
       const subData = await subRes.json();
       setSubscriberCount(subData.total ?? 0);
     } catch { setSubscriberCount(0); }
+    try {
+      const staleRes = await fetch(`${API}/refresh/stale`, { headers: { Authorization: `Bearer ${token}` } });
+      const staleData = await staleRes.json();
+      setStaleCount(staleData.total ?? 0);
+    } catch { setStaleCount(0); }
   }
 
   async function checkAlerts() {
@@ -193,6 +201,20 @@ export default function Dashboard() {
     const data = await res.json();
     setWeeklyDealsStatus(data.message || "Done!");
     setSendingWeeklyDeals(false);
+  }
+
+  async function handleRefreshStale() {
+    setRefreshing(true);
+    setRefreshStatus("");
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/refresh-all-stale`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setRefreshStatus(data.message || "Done!");
+    setRefreshing(false);
+    loadDashboard(token!);
   }
 
   async function handlePublishAllBlogs() {
@@ -360,7 +382,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Real Revenue (30d)</p>
             <p className="text-3xl font-bold text-orange-600">£{summary?.awinRevenue ?? 0}</p>
@@ -373,6 +395,11 @@ export default function Dashboard() {
             <p className="text-sm text-gray-500 mb-1">Email Subscribers</p>
             <p className="text-3xl font-bold text-pink-600">{subscriberCount ?? "..."}</p>
             <p className="text-xs text-gray-400 mt-1">Active subscribers</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-red-400">
+            <p className="text-sm text-gray-500 mb-1">Stale Posts</p>
+            <p className="text-3xl font-bold text-red-600">{staleCount ?? "..."}</p>
+            <p className="text-xs text-gray-400 mt-1">Need refreshing</p>
           </div>
         </div>
 
@@ -446,6 +473,21 @@ export default function Dashboard() {
             )}
           </div>
           {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-100">
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">🔄 Content Refresher</h2>
+          <p className="text-sm text-gray-500 mb-4">Automatically regenerates posts older than 6 months with fresh content, updated prices and current year. Keeps Google rankings strong.</p>
+          <div className="flex gap-3 items-center mb-4">
+            <span className="bg-red-50 text-red-700 text-sm font-medium px-4 py-2 rounded-lg border border-red-200">
+              ⚠️ {staleCount ?? "..."} posts need refreshing
+            </span>
+          </div>
+          <button onClick={handleRefreshStale} disabled={refreshing} className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
+            {refreshing ? "Refreshing... (may take 2-3 mins)" : "🔄 Refresh Stale Posts (10 at a time)"}
+          </button>
+          {refreshStatus && <p className="text-sm mt-3 text-green-600">{refreshStatus}</p>}
+          <p className="text-xs text-gray-400 mt-3">⚡ Run this every 6 months to keep content fresh and rankings high</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
