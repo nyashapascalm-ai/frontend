@@ -74,6 +74,15 @@ export default function Dashboard() {
   const [comparisonStatus, setComparisonStatus] = useState("");
   const [publishingComparison, setPublishingComparison] = useState(false);
   const [lastComparisonId, setLastComparisonId] = useState<number | null>(null);
+  const [sponsorBrand, setSponsorBrand] = useState("");
+  const [sponsorFee, setSponsorFee] = useState("");
+  const [sponsorDesc, setSponsorDesc] = useState("");
+  const [sponsorMessages, setSponsorMessages] = useState("");
+  const [sponsorProductId, setSponsorProductId] = useState("");
+  const [generatingSponsored, setGeneratingSponsored] = useState(false);
+  const [sponsoredStatus, setSponsoredStatus] = useState("");
+  const [lastSponsoredId, setLastSponsoredId] = useState<number | null>(null);
+  const [publishingSponsored, setPublishingSponsored] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -263,6 +272,53 @@ export default function Dashboard() {
     setPublishingComparison(false);
   }
 
+  async function handleGenerateSponsored() {
+    if (!sponsorBrand || !sponsorProductId) {
+      setSponsoredStatus("❌ Brand name and Product ID are required.");
+      return;
+    }
+    setGeneratingSponsored(true);
+    setSponsoredStatus("");
+    setLastSponsoredId(null);
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/generate-sponsored`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        productId: parseInt(sponsorProductId),
+        brandName: sponsorBrand,
+        brandDescription: sponsorDesc,
+        sponsorFee: sponsorFee,
+        keyMessages: sponsorMessages,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setSponsoredStatus(`✅ Sponsored post generated for ${sponsorBrand}!`);
+      setLastSponsoredId(data.content?.id || null);
+    } else {
+      setSponsoredStatus(`❌ ${data.error}`);
+    }
+    setGeneratingSponsored(false);
+  }
+
+  async function handlePublishSponsored() {
+    if (!lastSponsoredId) return;
+    setPublishingSponsored(true);
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/wordpress/publish/${lastSponsoredId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setSponsoredStatus(`✅ Published! ${data.postUrl}`);
+    } else {
+      setSponsoredStatus(`❌ Publish failed: ${data.error}`);
+    }
+    setPublishingSponsored(false);
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <p className="text-gray-400">Loading dashboard...</p>
@@ -350,6 +406,46 @@ export default function Dashboard() {
             )}
           </div>
           {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-yellow-100">
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">⭐ Sponsored Post Generator</h2>
+          <p className="text-sm text-gray-500 mb-4">Generate sponsored content for brand partners. Includes disclosure banner, tracking and fee recording. Get the Product ID from the table below.</p>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Brand Name *</label>
+              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorBrand} onChange={e => setSponsorBrand(e.target.value)} placeholder="e.g. Mamas & Papas" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Sponsor Fee (£)</label>
+              <input type="number" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorFee} onChange={e => setSponsorFee(e.target.value)} placeholder="e.g. 250" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Brand Description</label>
+              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorDesc} onChange={e => setSponsorDesc(e.target.value)} placeholder="e.g. UK's leading baby brand" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Key Messages</label>
+              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorMessages} onChange={e => setSponsorMessages(e.target.value)} placeholder="e.g. Safe, trusted, award-winning" />
+            </div>
+          </div>
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Product ID * (from table below)</label>
+            <input type="number" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorProductId} onChange={e => setSponsorProductId(e.target.value)} placeholder="e.g. 1" />
+          </div>
+          <div className="flex gap-3">
+            <button onClick={handleGenerateSponsored} disabled={generatingSponsored} className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
+              {generatingSponsored ? "Generating..." : "⭐ Generate Sponsored Post"}
+            </button>
+            {lastSponsoredId && (
+              <button onClick={handlePublishSponsored} disabled={publishingSponsored} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
+                {publishingSponsored ? "Publishing..." : "Publish to WordPress →"}
+              </button>
+            )}
+          </div>
+          {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
