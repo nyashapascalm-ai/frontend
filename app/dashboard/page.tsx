@@ -36,23 +36,9 @@ type ProductStat = {
 
 const API = "https://backend-production-c3f5.up.railway.app";
 const CATEGORIES = [
-  "Baby & Parenting",
-  "Home & Garden",
-  "Tech & AI Tools",
-  "Health & Wellness",
-  "Pet Care",
-  "Finance and Insurance",
-  "Travel and Outdoors",
-  "Start up and Investment",
-  "Parenting",
-  "Home Office",
-  "AI Tools",
-  "Education",
-  "Business",
-  "Furniture",
-  "Fashion",
-  "Beauty",
-  "Fitness",
+  "Baby & Parenting","Home & Garden","Tech & AI Tools","Health & Wellness","Pet Care",
+  "Finance and Insurance","Travel and Outdoors","Start up and Investment","Parenting",
+  "Home Office","AI Tools","Education","Business","Furniture","Fashion","Beauty","Fitness",
 ];
 
 export default function Dashboard() {
@@ -80,7 +66,6 @@ export default function Dashboard() {
   const [imageStatus, setImageStatus] = useState("");
   const [sendingWeeklyDeals, setSendingWeeklyDeals] = useState(false);
   const [weeklyDealsStatus, setWeeklyDealsStatus] = useState("");
-
   const [compCategory, setCompCategory] = useState("Baby & Parenting");
   const [compMaxPrice, setCompMaxPrice] = useState("500");
   const [compTitle, setCompTitle] = useState("");
@@ -243,11 +228,7 @@ export default function Dashboard() {
     const res = await fetch(`${API}/content/generate-comparison`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        category: compCategory,
-        maxPrice: compMaxPrice,
-        title: compTitle || undefined,
-      }),
+      body: JSON.stringify({ category: compCategory, maxPrice: compMaxPrice, title: compTitle || undefined }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -332,65 +313,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Comparison Post Generator */}
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-purple-100">
           <h2 className="font-semibold text-gray-900 mb-1 text-lg">🏆 Comparison Post Generator</h2>
           <p className="text-sm text-gray-500 mb-4">Generate "Best X under £Y" style posts that rank faster and convert 3-5x better than single product reviews.</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                value={compCategory}
-                onChange={e => setCompCategory(e.target.value)}
-              >
+              <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compCategory} onChange={e => setCompCategory(e.target.value)}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Max Price (£)</label>
-              <input
-                type="number"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                value={compMaxPrice}
-                onChange={e => setCompMaxPrice(e.target.value)}
-                placeholder="500"
-              />
+              <input type="number" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compMaxPrice} onChange={e => setCompMaxPrice(e.target.value)} placeholder="500" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Custom Title (optional)</label>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                value={compTitle}
-                onChange={e => setCompTitle(e.target.value)}
-                placeholder={`Best ${compCategory} Under £${compMaxPrice} UK 2026`}
-              />
+              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compTitle} onChange={e => setCompTitle(e.target.value)} placeholder={`Best ${compCategory} Under £${compMaxPrice} UK 2026`} />
             </div>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={handleGenerateComparison}
-              disabled={generatingComparison}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
-            >
+            <button onClick={handleGenerateComparison} disabled={generatingComparison} className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
               {generatingComparison ? "Generating... (30-60 secs)" : "Generate Comparison Post"}
             </button>
             {lastComparisonId && (
-              <button
-                onClick={handlePublishComparison}
-                disabled={publishingComparison}
-                className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
-              >
+              <button onClick={handlePublishComparison} disabled={publishingComparison} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
                 {publishingComparison ? "Publishing..." : "Publish to WordPress →"}
               </button>
             )}
           </div>
-          {comparisonStatus && (
-            <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>
-              {comparisonStatus}
-            </p>
-          )}
+          {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
@@ -409,7 +361,6 @@ export default function Dashboard() {
             </button>
             {bulkStatus && <p className="text-sm text-green-600 mt-3">{bulkStatus}</p>}
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Publish to WordPress</h2>
             <p className="text-sm text-gray-500 mb-4">Auto-publish all draft blog posts to mumdeals.co.uk.</p>
@@ -418,7 +369,6 @@ export default function Dashboard() {
             </button>
             {blogPublishStatus && <p className="text-sm text-green-600 mt-3">{blogPublishStatus}</p>}
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Add Featured Images</h2>
             <p className="text-sm text-gray-500 mb-4">Auto-fetch images from Unsplash for all published posts.</p>
@@ -439,7 +389,6 @@ export default function Dashboard() {
             {pinStatus && <p className="text-sm mt-3 text-green-600">{pinStatus}</p>}
             <p className="text-xs text-gray-400 mt-2">⚠️ Requires Pinterest API approval</p>
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
             <p className="text-sm text-gray-500 mb-4">AI classifies all products into the right niche categories.</p>
@@ -448,7 +397,6 @@ export default function Dashboard() {
             </button>
             {autoTagStatus && <p className="text-sm text-green-600 mt-3">{autoTagStatus}</p>}
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Weekly Report</h2>
             <p className="text-sm text-gray-500 mb-4">Send a full performance report to your inbox.</p>
@@ -459,30 +407,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Email & Subscribers */}
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-pink-100">
-          <h2 className="font-semibold text-gray-900 mb-1 text-lg">📧 Email & Subscribers</h2>
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">📧 Email &amp; Subscribers</h2>
           <p className="text-sm text-gray-500 mb-4">Send your weekly deals email to all active subscribers. Auto-picks top 6 products by commission rate.</p>
           <div className="flex gap-3">
-            <button
-              onClick={handleSendWeeklyDeals}
-              disabled={sendingWeeklyDeals}
-              className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50"
-            >
+            <button onClick={handleSendWeeklyDeals} disabled={sendingWeeklyDeals} className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
               {sendingWeeklyDeals ? "Sending..." : "📨 Send Weekly Deals Email"}
             </button>
-            
-              href={`${API}/subscribers`}
-              target="_blank"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-5 py-2 rounded-lg transition"
-            >
-              View Subscribers
-            </a>
+            <a href={`${API}/subscribers`} target="_blank" className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-5 py-2 rounded-lg transition">View Subscribers</a>
           </div>
-          {weeklyDealsStatus && (
-            <p className="text-sm mt-3 text-green-600">{weeklyDealsStatus}</p>
-          )}
-          <p className="text-xs text-gray-400 mt-3">⚡ Runs automatically every Monday at 9am once cron is set up</p>
+          {weeklyDealsStatus && <p className="text-sm mt-3 text-green-600">{weeklyDealsStatus}</p>}
+          <p className="text-xs text-gray-400 mt-3">⚡ Runs automatically every Monday at 9am via cron-job.org</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -496,7 +431,6 @@ export default function Dashboard() {
             </label>
             {importStatus && <p className="text-sm text-green-600 mt-2">{importStatus}</p>}
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Quick Links</h2>
             <div className="space-y-2">
