@@ -28,7 +28,7 @@ export default function AdsManager() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/login"); return; }
-    loadAds(token);
+    loadAds(token!);
   }, []);
 
   async function loadAds(token: string) {
@@ -56,7 +56,7 @@ export default function AdsManager() {
       body: JSON.stringify(form),
     });
     const data = await res.json();
-    if (res.ok) { setStatus("Saved!"); resetForm(); loadAds(token); }
+    if (res.ok) { setStatus("Saved!"); resetForm(); loadAds(token!); }
     else setStatus("Error: "+data.error);
     setSaving(false);
   }
@@ -65,7 +65,7 @@ export default function AdsManager() {
     if (!confirm("Delete this ad?")) return;
     const token = localStorage.getItem("token");
     await fetch(API+"/ads/"+id, { method: "DELETE", headers: { Authorization: "Bearer "+token } });
-    loadAds(token);
+    loadAds(token!);
   }
 
   function handleEdit(ad: any) {
