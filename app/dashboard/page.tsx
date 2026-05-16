@@ -269,7 +269,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setComparisonStatus(`âœ… ${data.message} â€” comparing ${data.productsCompared} products`);
+      setComparisonStatus(`✅ ${data.message} â€” comparing ${data.productsCompared} products`);
       setLastComparisonId(data.content?.id || null);
     } else {
       setComparisonStatus(`âŒ ${data.error}`);
@@ -287,7 +287,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setComparisonStatus(`âœ… Published! ${data.postUrl}`);
+      setComparisonStatus(`✅ Published! ${data.postUrl}`);
     } else {
       setComparisonStatus(`âŒ Publish failed: ${data.error}`);
     }
@@ -316,7 +316,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setSponsoredStatus(`âœ… Sponsored post generated for ${sponsorBrand}!`);
+      setSponsoredStatus(`✅ Sponsored post generated for ${sponsorBrand}!`);
       setLastSponsoredId(data.content?.id || null);
     } else {
       setSponsoredStatus(`âŒ ${data.error}`);
@@ -334,7 +334,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setSponsoredStatus(`âœ… Published! ${data.postUrl}`);
+      setSponsoredStatus(`✅ Published! ${data.postUrl}`);
     } else {
       setSponsoredStatus(`âŒ Publish failed: ${data.error}`);
     }
@@ -352,7 +352,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">â† Products</button>
+            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">← Products</button>
             <h1 className="text-2xl font-bold text-gray-900">Revenue Dashboard</h1>
           </div>
           <div className="flex items-center gap-3"><button onClick={() => router.push("/advisor")} className="text-sm bg-pink-50 text-pink-700 border border-pink-200 px-4 py-2 rounded-lg hover:bg-pink-100 font-medium">System Advisor</button><span className="text-sm text-gray-500">{summary?.totalProducts} products</span></div>
@@ -385,7 +385,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Real Revenue (30d)</p>
-            <p className="text-3xl font-bold text-orange-600">Â£{summary?.awinRevenue ?? 0}</p>
+            <p className="text-3xl font-bold text-orange-600">£{summary?.awinRevenue ?? 0}</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <p className="text-sm text-gray-500 mb-1">Awin Transactions (30d)</p>
@@ -405,7 +405,7 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-purple-100">
           <h2 className="font-semibold text-gray-900 mb-1 text-lg">ðŸ† Comparison Post Generator</h2>
-          <p className="text-sm text-gray-500 mb-4">Generate "Best X under Â£Y" style posts that rank faster and convert 3-5x better than single product reviews.</p>
+          <p className="text-sm text-gray-500 mb-4">Generate "Best X under £Y" style posts that rank faster and convert 3-5x better than single product reviews.</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
@@ -414,12 +414,12 @@ export default function Dashboard() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Max Price (Â£)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Max Price (£)</label>
               <input type="number" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compMaxPrice} onChange={e => setCompMaxPrice(e.target.value)} placeholder="500" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Custom Title (optional)</label>
-              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compTitle} onChange={e => setCompTitle(e.target.value)} placeholder={`Best ${compCategory} Under Â£${compMaxPrice} UK 2026`} />
+              <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" value={compTitle} onChange={e => setCompTitle(e.target.value)} placeholder={`Best ${compCategory} Under £${compMaxPrice} UK 2026`} />
             </div>
           </div>
           <div className="flex gap-3">
@@ -428,11 +428,11 @@ export default function Dashboard() {
             </button>
             {lastComparisonId && (
               <button onClick={handlePublishComparison} disabled={publishingComparison} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-                {publishingComparison ? "Publishing..." : "Publish to WordPress â†’"}
+                {publishingComparison ? "Publishing..." : "Publish to WordPress ←’"}
               </button>
             )}
           </div>
-          {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("âœ…") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
+          {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-yellow-100">
@@ -444,7 +444,7 @@ export default function Dashboard() {
               <input type="text" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorBrand} onChange={e => setSponsorBrand(e.target.value)} placeholder="e.g. Mamas & Papas" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Sponsor Fee (Â£)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Sponsor Fee (£)</label>
               <input type="number" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" value={sponsorFee} onChange={e => setSponsorFee(e.target.value)} placeholder="e.g. 250" />
             </div>
           </div>
@@ -468,11 +468,11 @@ export default function Dashboard() {
             </button>
             {lastSponsoredId && (
               <button onClick={handlePublishSponsored} disabled={publishingSponsored} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-                {publishingSponsored ? "Publishing..." : "Publish to WordPress â†’"}
+                {publishingSponsored ? "Publishing..." : "Publish to WordPress ←’"}
               </button>
             )}
           </div>
-          {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("âœ…") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
+          {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-100">
@@ -583,19 +583,19 @@ export default function Dashboard() {
             <div className="space-y-2">
               <a href="https://mumdeals.co.uk" target="_blank" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <span className="text-sm font-medium text-gray-700">WordPress Site</span>
-                <span className="text-xs text-gray-400">View â†’</span>
+                <span className="text-xs text-gray-400">View ←’</span>
               </a>
               <a href="https://uk.pinterest.com/mumcircle3/baby-parenting-deals/" target="_blank" className="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition">
                 <span className="text-sm font-medium text-red-700">Pinterest Board</span>
-                <span className="text-xs text-red-400">View â†’</span>
+                <span className="text-xs text-red-400">View ←’</span>
               </a>
               <a href="https://ui.awin.com/awin/affiliate/2660114" target="_blank" className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
                 <span className="text-sm font-medium text-blue-700">Awin Dashboard</span>
-                <span className="text-xs text-blue-400">View â†’</span>
+                <span className="text-xs text-blue-400">View ←’</span>
               </a>
               <a href="https://search.google.com/search-console" target="_blank" className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition">
                 <span className="text-sm font-medium text-green-700">Search Console</span>
-                <span className="text-xs text-green-400">View â†’</span>
+                <span className="text-xs text-green-400">View ←’</span>
               </a>
             </div>
           </div>
