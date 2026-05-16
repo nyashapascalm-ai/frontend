@@ -31,7 +31,7 @@ export default function AdsManager() {
     loadAds(token);
   }, []);
 
-  async function loadAds(token) {
+  async function loadAds(token: string) {
     setLoading(true);
     const [a, s] = await Promise.all([
       fetch(API+"/ads", { headers: { Authorization: "Bearer "+token } }),
@@ -61,14 +61,14 @@ export default function AdsManager() {
     setSaving(false);
   }
 
-  async function handleDelete(id) {
+  async function handleDelete(id: number) {
     if (!confirm("Delete this ad?")) return;
     const token = localStorage.getItem("token");
     await fetch(API+"/ads/"+id, { method: "DELETE", headers: { Authorization: "Bearer "+token } });
     loadAds(token);
   }
 
-  function handleEdit(ad) {
+  function handleEdit(ad: any) {
     setForm({ title:ad.title,advertiser:ad.advertiser,size:ad.size,position:ad.position,mediaUrl:ad.mediaUrl,linkUrl:ad.linkUrl,altText:ad.altText||"",startDate:ad.startDate?.split("T")[0]||"",endDate:ad.endDate?.split("T")[0]||"",fee:ad.fee||"",notes:ad.notes||"" });
     setEditId(ad.id); setShowForm(true);
   }
