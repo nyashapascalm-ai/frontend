@@ -136,7 +136,7 @@ export default function AdsManager() {
               ].map(f => (
                 <div key={f.key}>
                   <label style={{ fontSize:12, fontWeight:500, color:"#374151", display:"block", marginBottom:4 }}>{f.label}</label>
-                  <input type={f.type||"text"} value={form[f.key]} onChange={e => setForm({...form,[f.key]:e.target.value})} placeholder={f.placeholder||""} style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1px solid #e5e7eb", fontSize:14, boxSizing:"border-box" }} />
+                  <input type={f.type||"text"} value={(form as any)[f.key]} onChange={e => setForm({...form,[f.key as string]:e.target.value})} placeholder={f.placeholder||""} style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1px solid #e5e7eb", fontSize:14, boxSizing:"border-box" }} />
                 </div>
               ))}
               <div>
