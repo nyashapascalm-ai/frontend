@@ -16,13 +16,13 @@ const POSITIONS = ["homepage-hero","homepage-sidebar","homepage-bottom","categor
 
 export default function AdsManager() {
   const router = useRouter();
-  const [ads, setAds] = useState([]);
-  const [summary, setSummary] = useState(null);
+  const [ads, setAds] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [editId, setEditId] = useState<number|null>(null);
   const [form, setForm] = useState({ title:"",advertiser:"",size:"Leaderboard",position:"homepage-hero",mediaUrl:"",linkUrl:"",altText:"",startDate:"",endDate:"",fee:"",notes:"" });
 
   useEffect(() => {
