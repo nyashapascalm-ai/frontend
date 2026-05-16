@@ -74,8 +74,8 @@ export default function AdsManager() {
   }
 
   const now = new Date();
-  const isExpired = (ad) => new Date(ad.endDate) < now;
-  const isActive = (ad) => ad.status==="active" && new Date(ad.startDate)<=now && new Date(ad.endDate)>=now;
+  const isExpired = (ad: any) => new Date(ad.endDate) < now;
+  const isActive = (ad: any) => ad.status==="active" && new Date(ad.startDate)<=now && new Date(ad.endDate)>=now;
 
   return (
     <div style={{ minHeight:"100vh", background:"#f8f9fa", padding:"24px" }}>
