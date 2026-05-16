@@ -269,7 +269,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setComparisonStatus(`Ô£à ${data.message} ÔÇö comparing ${data.productsCompared} products`);
+      setComparisonStatus(`✅ ${data.message} — comparing ${data.productsCompared} products`);
       setLastComparisonId(data.content?.id || null);
     } else {
       setComparisonStatus(`ÔØî ${data.error}`);
@@ -287,7 +287,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setComparisonStatus(`Ô£à Published! ${data.postUrl}`);
+      setComparisonStatus(`✅ Published! ${data.postUrl}`);
     } else {
       setComparisonStatus(`ÔØî Publish failed: ${data.error}`);
     }
@@ -316,7 +316,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setSponsoredStatus(`Ô£à Sponsored post generated for ${sponsorBrand}!`);
+      setSponsoredStatus(`✅ Sponsored post generated for ${sponsorBrand}!`);
       setLastSponsoredId(data.content?.id || null);
     } else {
       setSponsoredStatus(`ÔØî ${data.error}`);
@@ -334,7 +334,7 @@ export default function Dashboard() {
     });
     const data = await res.json();
     if (res.ok) {
-      setSponsoredStatus(`Ô£à Published! ${data.postUrl}`);
+      setSponsoredStatus(`✅ Published! ${data.postUrl}`);
     } else {
       setSponsoredStatus(`ÔØî Publish failed: ${data.error}`);
     }
@@ -352,7 +352,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">ÔåÉ Products</button>
+            <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">← Products</button>
             <h1 className="text-2xl font-bold text-gray-900">Revenue Dashboard</h1>
           </div>
           <div className="flex items-center gap-3"><button onClick={() => router.push("/advisor")} className="text-sm bg-pink-50 text-pink-700 border border-pink-200 px-4 py-2 rounded-lg hover:bg-pink-100 font-medium">System Advisor</button><span className="text-sm text-gray-500">{summary?.totalProducts} products</span></div>
@@ -377,7 +377,7 @@ export default function Dashboard() {
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <p className="text-sm text-gray-500 mb-1">Top Product</p>
-            <p className="text-lg font-bold text-gray-900 truncate">{summary?.topProduct ?? "ÔÇö"}</p>
+            <p className="text-lg font-bold text-gray-900 truncate">{summary?.topProduct ?? "—"}</p>
             <p className="text-xs text-gray-400 mt-1">{summary?.totalContent} pieces of content</p>
           </div>
         </div>
@@ -404,7 +404,7 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-purple-100">
-          <h2 className="font-semibold text-gray-900 mb-1 text-lg">­ƒÅå Comparison Post Generator</h2>
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">🏆 Comparison Post Generator</h2>
           <p className="text-sm text-gray-500 mb-4">Generate "Best X under ┬úY" style posts that rank faster and convert 3-5x better than single product reviews.</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div>
@@ -432,11 +432,11 @@ export default function Dashboard() {
               </button>
             )}
           </div>
-          {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("Ô£à") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
+          {comparisonStatus && <p className={`text-sm mt-3 ${comparisonStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{comparisonStatus}</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-yellow-100">
-          <h2 className="font-semibold text-gray-900 mb-1 text-lg">Ô¡É Sponsored Post Generator</h2>
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">⭐ Sponsored Post Generator</h2>
           <p className="text-sm text-gray-500 mb-4">Generate sponsored content for brand partners. Includes disclosure banner, tracking and fee recording. Get the Product ID from the table below.</p>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
@@ -464,7 +464,7 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-3">
             <button onClick={handleGenerateSponsored} disabled={generatingSponsored} className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-              {generatingSponsored ? "Generating..." : "Ô¡É Generate Sponsored Post"}
+              {generatingSponsored ? "Generating..." : "⭐ Generate Sponsored Post"}
             </button>
             {lastSponsoredId && (
               <button onClick={handlePublishSponsored} disabled={publishingSponsored} className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
@@ -472,22 +472,22 @@ export default function Dashboard() {
               </button>
             )}
           </div>
-          {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("Ô£à") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
+          {sponsoredStatus && <p className={`text-sm mt-3 ${sponsoredStatus.startsWith("✅") ? "text-green-600" : "text-red-500"}`}>{sponsoredStatus}</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-100">
-          <h2 className="font-semibold text-gray-900 mb-1 text-lg">­ƒöä Content Refresher</h2>
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">🔄 Content Refresher</h2>
           <p className="text-sm text-gray-500 mb-4">Automatically regenerates posts older than 6 months with fresh content, updated prices and current year. Keeps Google rankings strong.</p>
           <div className="flex gap-3 items-center mb-4">
             <span className="bg-red-50 text-red-700 text-sm font-medium px-4 py-2 rounded-lg border border-red-200">
-              ÔÜá´©Å {staleCount ?? "..."} posts need refreshing
+              ⚠️ {staleCount ?? "..."} posts need refreshing
             </span>
           </div>
           <button onClick={handleRefreshStale} disabled={refreshing} className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-            {refreshing ? "Refreshing... (may take 2-3 mins)" : "­ƒöä Refresh Stale Posts (10 at a time)"}
+            {refreshing ? "Refreshing... (may take 2-3 mins)" : "🔄 Refresh Stale Posts (10 at a time)"}
           </button>
           {refreshStatus && <p className="text-sm mt-3 text-green-600">{refreshStatus}</p>}
-          <p className="text-xs text-gray-400 mt-3">ÔÜí Run this every 6 months to keep content fresh and rankings high</p>
+          <p className="text-xs text-gray-400 mt-3">💡 Run this every 6 months to keep content fresh and rankings high</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
@@ -532,7 +532,7 @@ export default function Dashboard() {
               {pinning ? "Pinning..." : "Pin All Products"}
             </button>
             {pinStatus && <p className="text-sm mt-3 text-green-600">{pinStatus}</p>}
-            <p className="text-xs text-gray-400 mt-2">ÔÜá´©Å Requires Pinterest API approval</p>
+            <p className="text-xs text-gray-400 mt-2">⚠️ Requires Pinterest API approval</p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Auto-Tag Niches</h2>
@@ -553,18 +553,18 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-pink-100">
-          <h2 className="font-semibold text-gray-900 mb-1 text-lg">­ƒôº Email &amp; Subscribers</h2>
+          <h2 className="font-semibold text-gray-900 mb-1 text-lg">📧 Email &amp; Subscribers</h2>
           <p className="text-sm text-gray-500 mb-4">Send your weekly deals email to all active subscribers. Auto-picks top 6 products by commission rate.</p>
           <div className="flex gap-3 items-center">
             <button onClick={handleSendWeeklyDeals} disabled={sendingWeeklyDeals} className="bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-              {sendingWeeklyDeals ? "Sending..." : "­ƒô¿ Send Weekly Deals Email"}
+              {sendingWeeklyDeals ? "Sending..." : "📨 Send Weekly Deals Email"}
             </button>
             <span className="bg-pink-50 text-pink-700 text-sm font-medium px-4 py-2 rounded-lg border border-pink-200">
-              ­ƒæÑ {subscriberCount ?? "..."} subscribers
+              👥 {subscriberCount ?? "..."} subscribers
             </span>
           </div>
           {weeklyDealsStatus && <p className="text-sm mt-3 text-green-600">{weeklyDealsStatus}</p>}
-          <p className="text-xs text-gray-400 mt-3">ÔÜí Runs automatically every Monday at 9am via cron-job.org</p>
+          <p className="text-xs text-gray-400 mt-3">💡 Runs automatically every Monday at 9am via cron-job.org</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -633,7 +633,7 @@ export default function Dashboard() {
                   </td>
                   <td className="px-6 py-4 text-right text-sm text-gray-700">{p.totalClicks}</td>
                   <td className="px-6 py-4 text-right text-sm text-gray-700">{p.clicks7d}</td>
-                  <td className="px-6 py-4 text-right text-sm text-orange-600">{p.commissionRate ? `${p.commissionRate}%` : "ÔÇö"}</td>
+                  <td className="px-6 py-4 text-right text-sm text-orange-600">{p.commissionRate ? `${p.commissionRate}%` : "—"}</td>
                   <td className="px-6 py-4 text-right text-sm font-semibold text-green-600">${p.estimatedEarnings}</td>
                   <td className="px-6 py-4 text-right text-sm text-gray-700">{p.contentCount}</td>
                 </tr>
