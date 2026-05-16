@@ -355,7 +355,7 @@ export default function Dashboard() {
             <button onClick={() => router.push("/")} className="text-sm text-gray-500 hover:text-gray-700">← Products</button>
             <h1 className="text-2xl font-bold text-gray-900">Revenue Dashboard</h1>
           </div>
-          <div className="flex items-center gap-3"><button onClick={() => router.push("/advisor")} className="text-sm bg-pink-50 text-pink-700 border border-pink-200 px-4 py-2 rounded-lg hover:bg-pink-100 font-medium">System Advisor</button><span className="text-sm text-gray-500">{summary?.totalProducts} products</span></div>
+          <div className="flex items-center gap-3"><button onClick={() => router.push("/advisor")} className="text-sm bg-pink-50 text-pink-700 border border-pink-200 px-4 py-2 rounded-lg hover:bg-pink-100 font-medium">System Advisor</button><button onClick={() => router.push("/ads")} className="text-sm bg-purple-50 text-purple-700 border border-purple-200 px-4 py-2 rounded-lg hover:bg-purple-100 font-medium">Ad Manager</button><span className="text-sm text-gray-500">{summary?.totalProducts} products</span></div>
         </div>
       </header>
 
